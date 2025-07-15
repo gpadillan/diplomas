@@ -6,13 +6,11 @@ from hojas.utils.plantilla_utils import generar_documento
 # Rutas relativas a las plantillas
 PLANTILLAS = {
     "NORMAL": "hojas/plantillas/TITULO_LOGISTICA_NORMAL.docx",
-    "CUALIFICAN": "hojas/plantillas/TITULO_LOGISTICA_CUALIFICAN.docx"
 }
 
 # Alias para mostrar nombres más legibles
 ALIAS = {
     "NORMAL": "Sin Cualificam",
-    "CUALIFICAN": "Con Cualificam"
 }
 ALIAS_INVERSO = {v: k for k, v in ALIAS.items()}
 
