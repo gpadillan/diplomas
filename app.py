@@ -1,12 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
-import os
-from dotenv import load_dotenv
 from msal import ConfidentialClientApplication
-
-# Cargar variables de entorno desde .env
-load_dotenv()
 
 # Configurar diseño ancho para mejor visualización
 st.set_page_config(layout="wide")
@@ -24,11 +19,11 @@ from hojas.expedicion_PYTHON import run as run_python
 from hojas.expedicion_FULLSTACK import run as run_fullstack
 from hojas.expedicion_DPO_CIBER import run as run_dpo_ciber  # ✅ NUEVO
 
-# Config SharePoint usando variables del entorno
+# Configuración desde st.secrets (para Streamlit Cloud)
 config = {
-    "client_id": os.getenv("CLIENT_ID"),
-    "tenant_id": os.getenv("TENANT_ID"),
-    "client_secret": os.getenv("CLIENT_SECRET"),
+    "client_id": st.secrets["CLIENT_ID"],
+    "tenant_id": st.secrets["TENANT_ID"],
+    "client_secret": st.secrets["CLIENT_SECRET"],
     "domain": "grupomainjobs.sharepoint.com",
     "site_name": "GrupoMainjobs928",
     "file_path": "/ExpeciciónTitulos/REGISTRO GENERAL DE TÍTULOS (1).xlsx"
