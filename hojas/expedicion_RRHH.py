@@ -41,7 +41,7 @@ def run(df: pd.DataFrame):
                 docx_path = generar_documento(alumno, plantilla_path)
                 with open(docx_path, "rb") as f:
                     st.download_button(
-                        "📥 Descargar DOCX",
+                        "📥 Descargar",
                         f,
                         file_name=os.path.basename(docx_path),
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"

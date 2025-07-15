@@ -35,12 +35,12 @@ def run(df: pd.DataFrame):
         st.subheader("📋 Datos del alumno")
         st.write(alumno.astype(str))
 
-        if st.button("🖨️ Generar PDF protegido"):
+        if st.button("🖨️ Generar Documento"):
             try:
                 pdf_path = generar_documento(alumno, plantilla_path, sufijo_tipo=plantilla_opcion)
                 with open(pdf_path, "rb") as f:
                     st.download_button(
-                        "📥 Descargar PDF",
+                        "📥 Descargar",
                         f,
                         file_name=os.path.basename(pdf_path),
                         mime="application/pdf"
