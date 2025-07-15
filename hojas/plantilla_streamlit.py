@@ -3,8 +3,8 @@ import tempfile
 import pandas as pd
 from docx import Document
 from docx.shared import Pt
-import win32com.client as win32
-import pythoncom
+from docx2pdf import convert  # ✔️ Compatible localmente en Windows
+# Nota: docx2pdf no funciona en Streamlit Cloud, solo local
 
 def limpiar(valor):
     if pd.isna(valor):
@@ -26,19 +26,14 @@ def reemplazar_campos_en_docx(doc: Document, campos: dict):
             for cell in row.cells:
                 reemplazar_campos_en_docx(cell, campos)
 
-def convertir_docx_a_pdf(docx_path: str, output_pdf: str, password: str = "1234"):
-    pythoncom.CoInitialize()
-    word = win32.gencache.EnsureDispatch("Word.Application")
-    word.Visible = False
-
-    doc = word.Documents.Open(os.path.abspath(docx_path))
-    temp_pdf = tempfile.mktemp(suffix=".pdf")
-    doc.ExportAsFixedFormat(temp_pdf, 17)
-    doc.Close(False)
-    word.Quit()
-
-    os.replace(temp_pdf, output_pdf)
-    return output_pdf
+def convertir_docx_a_pdf(docx_path: str, output_pdf: str):
+    # Sólo funciona en Windows localmente
+    try:
+        convert(docx_path, output_pdf)
+        return output_pdf
+    except Exception as e:
+        print(f"⚠️ No se pudo convertir a PDF: {e}")
+        return None
 
 def generar_documento(alumno, plantilla_path: str, prefijo: str = "TITULO") -> str:
     doc = Document(plantilla_path)
@@ -46,19 +41,8 @@ def generar_documento(alumno, plantilla_path: str, prefijo: str = "TITULO") -> s
     fecha = alumno.get("FECHA")
     fecha_exp = alumno.get("FECHA EXPEDICIÓN")
 
-    fecha_str = ""
-    if pd.notna(fecha):
-        try:
-            fecha_str = pd.to_datetime(fecha).strftime("%d/%m/%Y")
-        except Exception:
-            fecha_str = str(fecha)
-
-    fecha_exp_str = ""
-    if pd.notna(fecha_exp):
-        try:
-            fecha_exp_str = pd.to_datetime(fecha_exp).strftime("%d/%m/%Y")
-        except Exception:
-            fecha_exp_str = str(fecha_exp)
+    fecha_str = pd.to_datetime(fecha).strftime("%d/%m/%Y") if pd.notna(fecha) else ""
+    fecha_exp_str = pd.to_datetime(fecha_exp).strftime("%d/%m/%Y") if pd.notna(fecha_exp) else ""
 
     campos = {
         "{{NOMBRE}}": limpiar(alumno.get("NOMBRE")),
@@ -81,4 +65,6 @@ def generar_documento(alumno, plantilla_path: str, prefijo: str = "TITULO") -> s
     doc.save(temp_docx)
 
     output_pdf = f"{prefijo}_{campos['{{DNI}}'] or 'sin_dni'}.pdf"
-    return convertir_docx_a_pdf(temp_docx, output_pdf)
+    pdf_path = convertir_docx_a_pdf(temp_docx, output_pdf)
+
+    return pdf_path or temp_docx  # Retornar PDF si fue posible, si no el .docx
