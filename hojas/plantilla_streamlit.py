@@ -3,8 +3,6 @@ import tempfile
 import pandas as pd
 from docx import Document
 from docx.shared import Pt
-from docx2pdf import convert  # ✔️ Compatible localmente en Windows
-# Nota: docx2pdf no funciona en Streamlit Cloud, solo local
 
 def limpiar(valor):
     if pd.isna(valor):
@@ -25,15 +23,6 @@ def reemplazar_campos_en_docx(doc: Document, campos: dict):
         for row in table.rows:
             for cell in row.cells:
                 reemplazar_campos_en_docx(cell, campos)
-
-def convertir_docx_a_pdf(docx_path: str, output_pdf: str):
-    # Sólo funciona en Windows localmente
-    try:
-        convert(docx_path, output_pdf)
-        return output_pdf
-    except Exception as e:
-        print(f"⚠️ No se pudo convertir a PDF: {e}")
-        return None
 
 def generar_documento(alumno, plantilla_path: str, prefijo: str = "TITULO") -> str:
     doc = Document(plantilla_path)
@@ -62,9 +51,8 @@ def generar_documento(alumno, plantilla_path: str, prefijo: str = "TITULO") -> s
     reemplazar_campos_en_docx(doc, campos)
 
     temp_docx = tempfile.mktemp(suffix=".docx")
-    doc.save(temp_docx)
+    output_name = f"{prefijo}_{campos['{{DNI}}'] or 'sin_dni'}.docx"
+    final_path = os.path.join(os.path.dirname(temp_docx), output_name)
+    doc.save(final_path)
 
-    output_pdf = f"{prefijo}_{campos['{{DNI}}'] or 'sin_dni'}.pdf"
-    pdf_path = convertir_docx_a_pdf(temp_docx, output_pdf)
-
-    return pdf_path or temp_docx  # Retornar PDF si fue posible, si no el .docx
+    return final_path  # Siempre retorna el .docx, incluso en local

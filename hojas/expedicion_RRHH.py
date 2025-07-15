@@ -14,7 +14,11 @@ def run(df: pd.DataFrame):
 
     df.columns = df.columns.str.strip()
 
-    columnas_requeridas = ["NOMBRE", "APELLIDOS", "DNI ALUMNO", "Nº TITULO", "FECHA", "FECHA EXPEDICIÓN", "NOMBRE CURSO EXACTO EN TITULO", "PROMOCION EN LA QUE FINALIZA"]
+    columnas_requeridas = [
+        "NOMBRE", "APELLIDOS", "DNI ALUMNO", "Nº TITULO",
+        "FECHA", "FECHA EXPEDICIÓN", "NOMBRE CURSO EXACTO EN TITULO",
+        "PROMOCION EN LA QUE FINALIZA"
+    ]
     if not all(col in df.columns for col in columnas_requeridas):
         st.error("❌ Faltan columnas requeridas.")
         st.write("Esperadas:", columnas_requeridas)
@@ -32,15 +36,15 @@ def run(df: pd.DataFrame):
         st.subheader("📋 Datos del alumno")
         st.write(alumno.astype(str))
 
-        if st.button("🖨️ Generar PDF"):
+        if st.button("🖨️ Generar Documento"):
             try:
-                pdf_path = generar_documento(alumno, plantilla_path)
-                with open(pdf_path, "rb") as f:
+                docx_path = generar_documento(alumno, plantilla_path)
+                with open(docx_path, "rb") as f:
                     st.download_button(
-                        "📥 Descargar PDF",
+                        "📥 Descargar DOCX",
                         f,
-                        file_name=os.path.basename(pdf_path),
-                        mime="application/pdf"
+                        file_name=os.path.basename(docx_path),
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
             except Exception as e:
                 st.error(f"❌ Error: {e}")
