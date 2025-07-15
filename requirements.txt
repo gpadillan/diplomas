@@ -11,6 +11,5 @@ msal
 python-dotenv
 office365-rest-python-client
 streamlit-js-eval
-streamlit-aggrid
-pygsheets
-pytz
+streamlit-aggregate
+python-docx
