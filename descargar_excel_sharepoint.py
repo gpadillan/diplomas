@@ -12,7 +12,7 @@ config = {
     "client_secret": os.getenv("CLIENT_SECRET"),
     "domain": "grupomainjobs.sharepoint.com",
     "site_name": "GrupoMainjobs928",
-    "file_path": "/ExpeciciónTitulos/REGISTRO GENERAL DE TÍTULOS (1).xlsx"
+    "file_path": "/ExpediciónTitulos/REGISTRO GENERAL DE TÍTULOS (1).xlsx"
 }
 
 def get_access_token(config):
