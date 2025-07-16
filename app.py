@@ -26,7 +26,7 @@ config = {
     "client_secret": st.secrets["CLIENT_SECRET"],
     "domain": "grupomainjobs.sharepoint.com",
     "site_name": "GrupoMainjobs928",
-    "file_path": "/ExpeciciónTitulos/REGISTRO GENERAL DE TÍTULOS (1).xlsx"
+    "file_path": "/ExpediciónTitulos/REGISTRO GENERAL DE TÍTULOS (1).xlsx"
 }
 
 FILENAME = "REGISTRO_GENERAL_TITULOS.xlsx"
