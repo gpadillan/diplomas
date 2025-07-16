@@ -3,15 +3,22 @@ import streamlit as st
 import pandas as pd
 from hojas.utils.plantilla_utils import generar_documento
 
+# Plantillas
 PLANTILLAS = {
     "NORMAL": "hojas/plantillas/TITULO_EERR_NORMAL.docx",
     "CUALIFICAN": "hojas/plantillas/TITULO_EERR_CUALIFICAN.docx"
 }
 
+# Alias visibles para el usuario
+ALIAS = {
+    "NORMAL": "Sin Cualificam",
+    "CUALIFICAN": "Con Cualificam"
+}
+ALIAS_INVERSO = {v: k for k, v in ALIAS.items()}
+
 def run(df: pd.DataFrame):
     st.header("🎓 Expedición título - Energías Renovables")
 
-    # Limpieza de nombres de columnas
     df.columns = df.columns.str.strip()
 
     columnas_requeridas = [
@@ -29,8 +36,10 @@ def run(df: pd.DataFrame):
     df["NOMBRE_COMPLETO"] = df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
 
     seleccionado = st.selectbox("Selecciona un alumno", df["NOMBRE_COMPLETO"].unique())
-    plantilla_opcion = st.radio("Selecciona tipo de plantilla", list(PLANTILLAS.keys()))
-    plantilla_path = PLANTILLAS[plantilla_opcion]
+
+    tipo_visible = st.radio("Selecciona tipo de plantilla", list(ALIAS.values()))
+    tipo_plantilla = ALIAS_INVERSO[tipo_visible]
+    plantilla_path = PLANTILLAS[tipo_plantilla]
 
     if seleccionado:
         alumno = df[df["NOMBRE_COMPLETO"] == seleccionado].iloc[0]
@@ -39,13 +48,13 @@ def run(df: pd.DataFrame):
 
         if st.button("🖨️ Generar Documento"):
             try:
-                pdf_path = generar_documento(alumno, plantilla_path)
-                with open(pdf_path, "rb") as f:
+                docx_path = generar_documento(alumno, plantilla_path, sufijo_tipo=tipo_plantilla)
+                with open(docx_path, "rb") as f:
                     st.download_button(
-                        "📥 Descargar",
+                        "📥 Descargar DOCX",
                         f,
-                        file_name=os.path.basename(pdf_path),
-                        mime="application/pdf"
+                        file_name=os.path.basename(docx_path),
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
             except Exception as e:
                 st.error(f"❌ Error: {e}")

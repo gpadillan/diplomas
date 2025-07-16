@@ -7,6 +7,11 @@ PLANTILLAS = {
     "NORMAL": "hojas/plantillas/TITULO_DFINANCIERA_NORMAL.docx"
 }
 
+ALIAS = {
+    "NORMAL": "Sin Cualificam"
+}
+ALIAS_INVERSO = {v: k for k, v in ALIAS.items()}
+
 def run(df: pd.DataFrame):
     st.header("📄 Expedición título - Dirección Financiera")
 
@@ -17,7 +22,6 @@ def run(df: pd.DataFrame):
         "FECHA", "FECHA EXPEDICIÓN", "NOMBRE CURSO EXACTO EN TITULO",
         "PROMOCION EN LA QUE FINALIZA"
     ]
-
     if not all(col in df.columns for col in columnas_requeridas):
         st.error("❌ Faltan columnas requeridas en el Excel.")
         st.write("Esperadas:", columnas_requeridas)
@@ -25,9 +29,10 @@ def run(df: pd.DataFrame):
         return
 
     df["NOMBRE_COMPLETO"] = df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
-
     seleccionado = st.selectbox("Selecciona un alumno", df["NOMBRE_COMPLETO"].unique())
-    tipo_plantilla = st.radio("Selecciona tipo de plantilla", list(PLANTILLAS.keys()))
+
+    tipo_visible = st.radio("Selecciona tipo de plantilla", list(ALIAS.values()))
+    tipo_plantilla = ALIAS_INVERSO[tipo_visible]
     plantilla_path = PLANTILLAS[tipo_plantilla]
 
     if seleccionado:
@@ -37,13 +42,13 @@ def run(df: pd.DataFrame):
 
         if st.button("🖨️ Generar Documento"):
             try:
-                pdf_path = generar_documento(alumno, plantilla_path)
-                with open(pdf_path, "rb") as f:
+                docx_path = generar_documento(alumno, plantilla_path, sufijo_tipo=tipo_plantilla)
+                with open(docx_path, "rb") as f:
                     st.download_button(
                         "📥 Descargar",
                         f,
-                        file_name=os.path.basename(pdf_path),
-                        mime="application/pdf"
+                        file_name=os.path.basename(docx_path),
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
             except Exception as e:
                 st.error(f"❌ Error: {e}")

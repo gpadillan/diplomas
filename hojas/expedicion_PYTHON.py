@@ -7,6 +7,11 @@ PLANTILLAS = {
     "NORMAL": "hojas/plantillas/TITULO_PYTHON.docx"
 }
 
+ALIAS = {
+    "NORMAL": "Sin Cualificam"
+}
+ALIAS_INVERSO = {v: k for k, v in ALIAS.items()}
+
 def run(df: pd.DataFrame):
     st.header("🐍 Expedición título - Máster Python")
 
@@ -25,11 +30,11 @@ def run(df: pd.DataFrame):
         return
 
     df["NOMBRE_COMPLETO"] = df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
-
     seleccionado = st.selectbox("Selecciona un alumno", df["NOMBRE_COMPLETO"].unique())
 
-    plantilla_opcion = st.radio("Selecciona tipo de plantilla", list(PLANTILLAS.keys()))
-    plantilla_path = PLANTILLAS[plantilla_opcion]
+    tipo_visible = st.radio("Selecciona tipo de plantilla", list(ALIAS.values()))
+    tipo_plantilla = ALIAS_INVERSO[tipo_visible]
+    plantilla_path = PLANTILLAS[tipo_plantilla]
 
     if seleccionado:
         alumno = df[df["NOMBRE_COMPLETO"] == seleccionado].iloc[0]

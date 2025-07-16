@@ -3,11 +3,20 @@ import streamlit as st
 import pandas as pd
 from hojas.utils.plantilla_utils import generar_documento
 
+# Rutas de plantillas
 PLANTILLAS = {
     "NORMAL": "hojas/plantillas/TITULO_RRHH_NORMAL.docx",
     "CUALIFICAM (31-32)": "hojas/plantillas/TITULO_RRHH_CUALIFICAM(31-32).docx",
     "CUALIFICAM (33 en adelante)": "hojas/plantillas/TITULO_RRHH_CUALIFICAM(33-EN ADELANTE).docx"
 }
+
+# Alias para visibilidad en interfaz
+ALIAS = {
+    "NORMAL": "Sin Cualificam",
+    "CUALIFICAM (31-32)": "Con Cualificam (31-32)",
+    "CUALIFICAM (33 en adelante)": "Con Cualificam (33 en adelante)"
+}
+ALIAS_INVERSO = {v: k for k, v in ALIAS.items()}
 
 def run(df: pd.DataFrame):
     st.header("🧠 Expedición título - Recursos Humanos")
@@ -28,7 +37,9 @@ def run(df: pd.DataFrame):
     df["NOMBRE_COMPLETO"] = df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
 
     alumno_seleccionado = st.selectbox("Selecciona un alumno", df["NOMBRE_COMPLETO"].unique())
-    tipo_plantilla = st.radio("Selecciona tipo de plantilla", list(PLANTILLAS.keys()))
+
+    tipo_visible = st.radio("Selecciona tipo de plantilla", list(ALIAS.values()))
+    tipo_plantilla = ALIAS_INVERSO[tipo_visible]
     plantilla_path = PLANTILLAS[tipo_plantilla]
 
     if alumno_seleccionado:
@@ -38,7 +49,7 @@ def run(df: pd.DataFrame):
 
         if st.button("🖨️ Generar Documento"):
             try:
-                docx_path = generar_documento(alumno, plantilla_path)
+                docx_path = generar_documento(alumno, plantilla_path, sufijo_tipo=tipo_plantilla)
                 with open(docx_path, "rb") as f:
                     st.download_button(
                         "📥 Descargar",
