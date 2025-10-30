@@ -4,10 +4,12 @@ import pandas as pd
 from docx import Document
 from docx.shared import Pt
 
+
 def limpiar(valor):
     if pd.isna(valor):
         return ""
     return str(valor).strip()
+
 
 def reemplazar_campos_en_docx(doc: Document, campos: dict):
     for p in doc.paragraphs:
@@ -17,12 +19,13 @@ def reemplazar_campos_en_docx(doc: Document, campos: dict):
                     if campo in run.text:
                         run.text = run.text.replace(campo, valor)
                         if campo in ("{{NOMBRE}}", "{{APELLIDOS}}"):
-                            run.font.size = Pt(28)
+                            run.font.size = Pt(37)
 
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
                 reemplazar_campos_en_docx(cell, campos)
+
 
 def generar_documento(alumno, plantilla_path: str, sufijo_tipo: str = "") -> str:
     doc = Document(plantilla_path)
@@ -37,7 +40,6 @@ def generar_documento(alumno, plantilla_path: str, sufijo_tipo: str = "") -> str
         "{{NOMBRE}}": limpiar(alumno.get("NOMBRE")),
         "{{APELLIDOS}}": limpiar(alumno.get("APELLIDOS")),
         "{{DNI}}": limpiar(alumno.get("DNI ALUMNO")),
-        "{{TITULO}}": limpiar(alumno.get("NOMBRE CURSO EXACTO EN TITULO")),
         "{{PROMOCION}}": limpiar(alumno.get("PROMOCION EN LA QUE FINALIZA")),
         "{{FECHA EXPEDICIÓN}}": fecha_exp_str,
         "{{FECHA}}": fecha_str,
