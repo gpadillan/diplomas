@@ -1,7 +1,6 @@
 import os
 import streamlit as st
 import pandas as pd
-from hojas.plantilla_streamlit import generar_documento  # ✅ CORREGIDO
 
 PLANTILLAS = {
     "NORMAL": "hojas/plantillas/TITULO_PYTHON.docx"

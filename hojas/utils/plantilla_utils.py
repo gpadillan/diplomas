@@ -17,7 +17,7 @@ def reemplazar_campos_en_docx(doc: Document, campos: dict):
                     if campo in run.text:
                         run.text = run.text.replace(campo, valor)
                         if campo in ("{{NOMBRE}}", "{{APELLIDOS}}"):
-                            run.font.size = Pt(37)
+                            run.font.size = Pt(28)
 
     for table in doc.tables:
         for row in table.rows:
