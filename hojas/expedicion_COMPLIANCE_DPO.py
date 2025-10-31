@@ -16,9 +16,19 @@ ALIAS = {
 }
 ALIAS_INVERSO = {v: k for k, v in ALIAS.items()}
 
+def _is_yes_series(s: pd.Series) -> pd.Series:
+    """Devuelve True donde el valor equivale a 'sí'."""
+    if s is None:
+        return pd.Series(False, index=pd.RangeIndex(0))
+    ss = s.astype(str).str.strip().str.lower()
+    # normalizamos 'sí' -> 'si'
+    ss = ss.str.replace("í", "i")
+    return ss.isin({"si", "yes", "true", "verdadero", "1"})
+
 def run(df: pd.DataFrame):
     st.header("📜 Expedición título - Compliance y Protección de Datos")
 
+    # Limpieza básica de cabeceras
     df.columns = df.columns.str.strip()
 
     columnas_necesarias = [
@@ -27,15 +37,35 @@ def run(df: pd.DataFrame):
         "PROMOCION EN LA QUE FINALIZA",
         "FECHA", "FECHA EXPEDICIÓN", "Nº TITULO"
     ]
+    # La columna de filtro no es "necesaria" para generar título, pero si existe, filtramos
+    col_entregado = "ENTREGADO AL ALUMNO/A"
+
     if not all(col in df.columns for col in columnas_necesarias):
         st.error("❌ Faltan columnas necesarias en el Excel.")
         st.write("Se esperaban:", columnas_necesarias)
         st.write("Se encontraron:", list(df.columns))
         return
 
-    df["NOMBRE_COMPLETO"] = df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
+    # ⛔️ EXCLUIR los que ya están entregados al alumno
+    if col_entregado in df.columns:
+        mask_entregado = _is_yes_series(df[col_entregado])
+        df = df[~mask_entregado].copy()
+    else:
+        st.info("ℹ️ No se encontró la columna 'ENTREGADO AL ALUMNO/A'. No se aplicó filtro de entregados.")
 
-    seleccionado = st.selectbox("Selecciona un alumno", df["NOMBRE_COMPLETO"].unique())
+    if df.empty:
+        st.warning("No hay registros pendientes de expedición (todos marcados como entregados o no hay datos).")
+        return
+
+    # Nombre completo para selector
+    df["NOMBRE_COMPLETO"] = (
+        df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
+    )
+
+    seleccionado = st.selectbox(
+        "Selecciona un alumno",
+        sorted(df["NOMBRE_COMPLETO"].dropna().unique())
+    )
 
     tipo_visible = st.radio("Selecciona tipo de plantilla", list(ALIAS.values()))
     tipo_plantilla = ALIAS_INVERSO[tipo_visible]

@@ -18,6 +18,14 @@ ALIAS = {
 }
 ALIAS_INVERSO = {v: k for k, v in ALIAS.items()}
 
+
+def _is_yes(s: pd.Series) -> pd.Series:
+    """True cuando el valor equivale a 'sí' (robusto a variantes)."""
+    ss = s.astype(str).str.strip().str.lower()
+    ss = ss.str.replace("í", "i")  # normaliza 'sí' -> 'si'
+    return ss.isin({"si", "yes", "true", "1", "verdadero"})
+
+
 def run(df: pd.DataFrame):
     st.header("🧠 Expedición título - Recursos Humanos")
 
@@ -28,15 +36,29 @@ def run(df: pd.DataFrame):
         "FECHA", "FECHA EXPEDICIÓN", "NOMBRE CURSO EXACTO EN TITULO",
         "PROMOCION EN LA QUE FINALIZA"
     ]
+    col_entregado = "ENTREGADO AL ALUMNO/A"
+
     if not all(col in df.columns for col in columnas_requeridas):
         st.error("❌ Faltan columnas requeridas.")
         st.write("Esperadas:", columnas_requeridas)
         st.write("Encontradas:", list(df.columns))
         return
 
-    df["NOMBRE_COMPLETO"] = df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
+    # ✅ Filtrar los alumnos que ya tienen el título entregado
+    if col_entregado in df.columns:
+        df = df[~_is_yes(df[col_entregado])].copy()
+    else:
+        st.info("ℹ️ No se encontró la columna 'ENTREGADO AL ALUMNO/A'. No se aplicó filtro.")
 
-    alumno_seleccionado = st.selectbox("Selecciona un alumno", df["NOMBRE_COMPLETO"].unique())
+    if df.empty:
+        st.success("✅ No hay títulos de RRHH pendientes (todos entregados).")
+        return
+
+    df["NOMBRE_COMPLETO"] = (
+        df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
+    )
+
+    alumno_seleccionado = st.selectbox("Selecciona un alumno", sorted(df["NOMBRE_COMPLETO"].unique()))
 
     tipo_visible = st.radio("Selecciona tipo de plantilla", list(ALIAS.values()))
     tipo_plantilla = ALIAS_INVERSO[tipo_visible]
