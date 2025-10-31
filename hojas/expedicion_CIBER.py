@@ -16,14 +16,6 @@ ALIAS = {
 }
 ALIAS_INVERSO = {v: k for k, v in ALIAS.items()}
 
-
-def _is_yes(s: pd.Series) -> pd.Series:
-    """Detecta si equivale a 'sí'"""
-    ss = s.astype(str).str.strip().str.lower()
-    ss = ss.str.replace("í", "i")  # normalizar SÍ -> SI
-    return ss.isin({"si", "yes", "true", "verdadero", "1"})
-
-
 def run(df: pd.DataFrame):
     st.header("🔐 Expedición título - CIBERSEGURIDAD")
 
@@ -35,33 +27,15 @@ def run(df: pd.DataFrame):
         "PROMOCION EN LA QUE FINALIZA",
         "FECHA", "FECHA EXPEDICIÓN", "Nº TITULO"
     ]
-    col_entregado = "ENTREGADO AL ALUMNO/A"
-
-    # Validación columnas básicas
     if not all(col in df.columns for col in columnas_necesarias):
         st.error("❌ Faltan columnas necesarias en el Excel.")
         st.write("Se esperaban:", columnas_necesarias)
         st.write("Se encontraron:", list(df.columns))
         return
 
-    # ✅ Filtrar registros ya entregados
-    if col_entregado in df.columns:
-        df = df[~_is_yes(df[col_entregado])].copy()
-    else:
-        st.info("ℹ️ No se encontró la columna 'ENTREGADO AL ALUMNO/A'. No se filtró por entregados.")
-
-    # Si ya no queda nadie por título
-    if df.empty:
-        st.warning("✅ Todos los títulos de Ciberseguridad ya han sido entregados.")
-        return
-
-    # Nombre completo
     df["NOMBRE_COMPLETO"] = df["NOMBRE"].astype(str).str.strip() + " " + df["APELLIDOS"].astype(str).str.strip()
 
-    seleccionado = st.selectbox(
-        "Selecciona un alumno",
-        sorted(df["NOMBRE_COMPLETO"].unique())
-    )
+    seleccionado = st.selectbox("Selecciona un alumno", df["NOMBRE_COMPLETO"].unique())
 
     tipo_visible = st.radio("Selecciona tipo de plantilla", list(ALIAS.values()))
     tipo_plantilla = ALIAS_INVERSO[tipo_visible]
@@ -69,7 +43,6 @@ def run(df: pd.DataFrame):
 
     if seleccionado:
         alumno = df[df["NOMBRE_COMPLETO"] == seleccionado].iloc[0]
-
         st.subheader("📋 Datos del alumno")
         st.write(alumno.astype(str))
 
